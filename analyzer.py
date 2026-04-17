@@ -2,6 +2,7 @@ import math
 import re
 import argparse
 import os
+import subprocess
 import hashlib
 import urllib.request
 import getpass
@@ -211,10 +212,53 @@ def main():
         analyze(' '.join(args.password), args.verbose, args.no_hibp)
     else:
         try:
+            pending_msg = None
             while True:
-                pw = getpass.getpass('\n> ')
-                if pw:
+                subprocess.run('cls' if os.name == 'nt' else 'clear', shell=True)
+                print("=== password analyzer ===")
+                print(f"[1] analyze password")
+                print(f"[2] toggle verbose ({'on' if args.verbose else 'off'})")
+                print(f"[3] toggle hibp check ({'off' if args.no_hibp else 'on'})")
+                print(f"[4] help")
+                print(f"[5] exit  (ctrl+c)")
+                if pending_msg:
+                    print(f"\n{pending_msg}")
+                    pending_msg = None
+
+                choice = input("\nselect option > ").strip()
+
+                if choice == '1':
+                    pw = getpass.getpass('password > ')
+                    if not pw:
+                        pending_msg = "empty input, try again"
+                        continue
                     analyze(pw, args.verbose, args.no_hibp)
+                    input("\npress enter to continue...")
+
+                elif choice == '2':
+                    args.verbose = not args.verbose
+                    pending_msg = f"verbose {'enabled' if args.verbose else 'disabled'}"
+
+                elif choice == '3':
+                    args.no_hibp = not args.no_hibp
+                    pending_msg = f"hibp check {'disabled' if args.no_hibp else 'enabled'}"
+
+                elif choice == '4':
+                    print("\noptions:")
+                    print("  1  analyze a password")
+                    print("  2  toggle verbose output")
+                    print("  3  toggle hibp breach check")
+                    print("  4  show this help message")
+                    print("  5  exit the program")
+                    input("\npress enter to continue...")
+
+                elif choice == '5':
+                    print("done.")
+                    break
+
+                else:
+                    print("invalid option")
+
         except KeyboardInterrupt:
             print('\ndone.')
 
