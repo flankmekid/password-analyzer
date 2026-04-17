@@ -1,14 +1,15 @@
 # password-analyzer
 
-- a cli tool that checks how strong a password actually is — not just whether it has an uppercase letter and a symbol. uses entropy math, pattern detection, and real breach data.
+- a cli tool that checks how strong a password actually is, not just whether it has an uppercase letter and a symbol. uses entropy estimation, pattern detection, and real data from hibp.
 
 ## features
 
 - entropy scoring with pattern-based penalties (dictionary words, keyboard walks, repeated chars, dates, l33tspeak)
-- [haveibeenpwned](https://haveibeenpwned.com/) breach check — your password never leaves your machine, only a partial hash is sent
+- [haveibeenpwned](https://haveibeenpwned.com/) breach check, password always stays local.
 - crack time estimates for online and offline attack scenarios
 - color-coded output with a visual score bar
-- interactive mode, `--no-hibp` flag for offline use
+- interactive mode with hidden input (password is not displayed while typing)
+- `--no-hibp` flag for offline use
 
 ## installation
 
@@ -38,6 +39,10 @@ python analyzer.py --no-hibp mypassword
 python analyzer.py
 ```
 
+## disclaimer
+
+this tool provides an **approximation** of password strength. it does not model all real-world attack strategies and should not be used as a sole security guarantee.
+
 ## how it works
 
 ### entropy
@@ -48,9 +53,8 @@ password strength is measured in **bits** of entropy using the formula:
 H = L * log2(N)
 ```
 
-where `L` is the password length and `N` is the size of the character pool used (lowercase = 26, + uppercase = 52, + digits = 62, + symbols = 94).
-
-- raw entropy alone isn't enough — `aaaaaaaaaaaaa` scores high by the formula but is obviously terrible. that's what the pattern penalties fix.
+where `L` is the password length and `N` is the size of the character pool used (lowercase = 26, + uppercase = 52, + digits = 62, + symbols ~= 82).
+- note: `aaaaaaaaaaaaa` scores high by the formula but is obviously terrible, adding pattern penalties fixes this issue.
 
 ### pattern penalties
 
@@ -61,14 +65,13 @@ H_effective = H * (1 - penalty_factor)
 ```
 
 pattern -> penalty
-- common password -> 90%
-- dictionary words -> 40%
-- keyboard walk (qwerty, asdf, ...) -> 30%
-- repeated characters (aaa, 111, ...) -> 30%
-- sequential characters (abc, 123, ...) -> 20%
-- date pattern (1999, 01/01/2000, ...) -> 10%
+- dictionary words -> 85%
+- keyboard walk -> 50%
+- repeated characters -> 50%
+- sequential characters -> 50%
+- date pattern -> 30%
 
-penalties stack and are capped at 95% reduction.
+penalties stack and are capped at 97% reduction.
 
 ### crack time estimation
 
